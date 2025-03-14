@@ -1,0 +1,72 @@
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/js-year-calendar@latest/dist/js-year-calendar.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/js-year-calendar@latest/dist/js-year-calendar.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js" integrity="sha512-MSOo1aY+3pXCOCdGAYoBZ6YGI0aragoQsg1mKKBHXCYPIWxamwOE7Drh+N5CPgGI5SA9IEKJiPjdfqWFWmZtRA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/themes/black-tie/jquery-ui.min.css" integrity="sha512-bVIVlufxYIog6AKd3iWWUpQ/OSA0Zk4h0g1d2X42010UmLrpF9fPkNyQYMZSb+pt85IwdJIbGEiHWg3d5chHNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style type="text/css">
+    </style>
+</head>
+<body>
+    If you are paid biweekly & know one paycheck date, this tool can show you a calendar year of your paychecks.<br />
+    enter your last (or any) known paycheck date: <input type="text" id="payDate" /><br /><br />
+
+    <button>run</button>
+
+    <div class="calendar">
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("input#payDate").datepicker();
+
+	$("button").click(function(){
+		var payDate = new Date($("input#payDate").val());
+		var year = new Date(payDate).getFullYear();
+		var dateList = [];
+
+		var futurePaychecks = calculateAllDates(payDate, year, dateList);
+		var previousPaychecks = calculateAllDates(payDate, year, dateList, true);
+		new Calendar('.calendar', {
+		minDate: new Date(year, 0, 1),
+		maxDate: new Date(year, 11, 31),
+		startYear: year,
+		dataSource: datesToDataSources(futurePaychecks),
+		style: 'background'});
+  });
+
+  function datesToDataSources(dateList) {
+  var dataSources = [];
+  for (var i = 0; i < dateList.length; i++) {
+	dataSources.push({
+                id: 1,
+                name: 'paycheck',
+                startDate: dateList[i],
+                endDate: dateList[i],
+				color: 'yellow'
+            });
+  }
+  return dataSources;
+  };
+
+  function calculateAllDates(payDate, year, dateList, searchBack = false) {
+		if (payDate.getFullYear() == year) {
+			dateList.push(new Date(payDate.valueOf()));
+			var next = calculateNextDate(payDate, searchBack);
+			return calculateAllDates(next, year, dateList, searchBack);
+		}
+		else {
+			return dateList;
+		}
+	};
+
+  function calculateNextDate(date,searchBack = false) {
+	var newDate;
+	if (searchBack) newDate = date.setDate(date.getDate()-14);
+	else newDate = date.setDate(date.getDate()+14);
+	return new Date(newDate);
+  }
+});
+</script>
